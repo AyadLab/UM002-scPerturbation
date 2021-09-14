@@ -18,23 +18,13 @@ library(clustree)
 
 #' Plots a series of barplots and connects them
 #' Modified from https://stackoverflow.com/questions/22560850/barplot-with-connected-series
-#'
-#' @param dat NxM matrix with N rows as features and M columns as samples
-#' @param color Vector of N colors
-#' @param space Space between barplots
-#' @param alpha Alpha for area connecting barplots
-#'
-#' @examples
-#' dat <- matrix(rnorm(100),10,10)
-#' dat <- abs(matrix(rnorm(100),10,10))
-#' connectedBarplot(dat, color=rainbow(nrow(dat)))
-#'
+
 connectedBarplot <- function(dat, color=rainbow(nrow(dat)), space=1, alpha=0.5, ...) {
   b <- barplot(dat, col=color, space = space, ...)
-  
+
   for (i in seq_len(ncol(dat) - 1)) {
     lines(c(b[i]+0.5, b[i+1]-0.5), c(0, 0)) ## bottom line
-    
+
     for (j in seq_len(nrow(dat))) {
       if (j == 1) {
         lines(c(b[i]+0.5, b[i+1]-0.5), c(dat[j,i], dat[j,i+1]))
@@ -51,7 +41,7 @@ connectedBarplot <- function(dat, color=rainbow(nrow(dat)), space=1, alpha=0.5, 
       if (j > 2) {
         lines(c(b[i]+0.5, b[i+1]-0.5), c(colSums(dat[1:j,])[i], colSums(dat[1:j,])[i+1]))
         polygon(c(b[i]+0.5, b[i]+0.5, b[i+1]-0.5, b[i+1]-0.5),
-                c(colSums(dat[1:(j-1),])[i], colSums(dat[1:j,])[i], colSums(dat[1:j,])[i+1], 
+                c(colSums(dat[1:(j-1),])[i], colSums(dat[1:j,])[i], colSums(dat[1:j,])[i+1],
                   colSums(dat[1:(j-1),])[i+1]),
                 col=adjustcolor(color[j], alpha.f=alpha))
       }
@@ -69,9 +59,9 @@ int <- NormalizeData(int, assay = "RNA", normalization.method = "LogNormalize", 
 DefaultAssay(int) <- "RNA"
 int <- CellCycleScoring(int, s.features = cc.genes.updated.2019$s.genes, g2m.features = cc.genes.updated.2019$g2m.genes, set.ident = TRUE)
 int$CellCycleIdents <- Idents(int)
-# int <- ScaleData(int, assay = "RNA", features = rownames(int), vars.to.regress = c("G2M.Score", "S.Score", "percent.mt"))
+int <- ScaleData(int, assay = "RNA", features = rownames(int), vars.to.regress = c("G2M.Score", "S.Score", "percent.mt"))
 # saveRDS(int, file = "05_output/int.scaled.g2m.s.percent.mt.RDS")
-int <- readRDS(file = "05_output/int.scaled.g2m.s.percent.mt.RDS")
+# int <- readRDS(file = "05_output/int.scaled.g2m.s.percent.mt.RDS")
 Idents(int) <- int$Arm
 NM <- subset(int, idents = "NM002")
 DMSO <- subset(int, idents = "DMSO")
@@ -109,7 +99,7 @@ pdf(file = "05_output/UM002_DMSO_CellCycleShift_connectedBarplot.pdf")
 connectedBarplot(dat = CellCycleCounts4)
 dev.off()
 
-# Make a plot showing the changes in % of assigned cell cycle identities. 
+# Make a plot showing the changes in % of assigned cell cycle identities.
 CellCycleCounts5 <- as.data.frame(CellCycleCounts4)
 
 CellCycleCounts5$delta <- CellCycleCounts5$NM002 - CellCycleCounts5$DMSO
@@ -186,9 +176,6 @@ sres
 
 Idents(int) <- int$Arm
 bulkArmMarkers <- FindAllMarkers(int, test.use = "MAST", only.pos = TRUE)
-# bulkArmMarkers
-
-# DoHeatmap(int, features = bulkArmMarkers$gene)
 
 ##########################################################################################################
 ##########################################################################################################
@@ -200,7 +187,6 @@ bulkArmMarkers <- FindAllMarkers(int, test.use = "MAST", only.pos = TRUE)
 ##########################################################################################################
 ##########################################################################################################
 
-# If this is good need to redo clustering for clustree to look nice...
 int2 <- int
 int2$integrated_snn_res.0.3 <- NULL
 int2$integrated_snn_res.0.35 <- NULL
@@ -268,49 +254,6 @@ rownames(SNNcounts) <- SNNcounts$SNN.Cluster
 SNNcounts$SNN.Cluster <- NULL
 SNNcounts <- as.matrix(SNNcounts)
 # SNNcounts
-#' Plots a series of barplots and connects them
-#' Modified from https://stackoverflow.com/questions/22560850/barplot-with-connected-series
-#'
-#' @param dat NxM matrix with N rows as features and M columns as samples
-#' @param color Vector of N colors
-#' @param space Space between barplots
-#' @param alpha Alpha for area connecting barplots
-#'
-#' @examples
-#' dat <- matrix(rnorm(100),10,10)
-#' dat <- abs(matrix(rnorm(100),10,10))
-#' connectedBarplot(dat, color=rainbow(nrow(dat)))
-#'
-connectedBarplot <- function(dat, color=rainbow(nrow(dat)), space=1, alpha=0.5, ...) {
-  b <- barplot(dat, col=color, space = space, ...)
-  
-  for (i in seq_len(ncol(dat) - 1)) {
-    lines(c(b[i]+0.5, b[i+1]-0.5), c(0, 0)) ## bottom line
-    
-    for (j in seq_len(nrow(dat))) {
-      if (j == 1) {
-        lines(c(b[i]+0.5, b[i+1]-0.5), c(dat[j,i], dat[j,i+1]))
-        polygon(c(b[i]+0.5, b[i]+0.5, b[i+1]-0.5, b[i+1]-0.5),
-                c(0, dat[j,i], dat[j,i+1], 0),
-                col=adjustcolor(color[j], alpha.f=alpha))
-      }
-      if (j == 2) {
-        lines(c(b[i]+0.5, b[i+1]-0.5), c(colSums(dat[1:j,])[i], colSums(dat[1:j,])[i+1]))
-        polygon(c(b[i]+0.5, b[i]+0.5, b[i+1]-0.5, b[i+1]-0.5),
-                c(dat[1,i], colSums(dat[1:j,])[i], colSums(dat[1:j,])[i+1], dat[1,i+1]),
-                col=adjustcolor(color[j], alpha.f=alpha))
-      }
-      if (j > 2) {
-        lines(c(b[i]+0.5, b[i+1]-0.5), c(colSums(dat[1:j,])[i], colSums(dat[1:j,])[i+1]))
-        polygon(c(b[i]+0.5, b[i]+0.5, b[i+1]-0.5, b[i+1]-0.5),
-                c(colSums(dat[1:(j-1),])[i], colSums(dat[1:j,])[i], colSums(dat[1:j,])[i+1], colSums(dat[1:(j-1),])[i+1]),
-                col=adjustcolor(color[j], alpha.f=alpha))
-      }
-    }
-  }
-}
-
-SNNcounts
 
 pdf(file = "05_output/UM002_DMSO_SNNShift_connectedBarplot.pdf")
 connectedBarplot(dat = SNNcounts)
@@ -334,9 +277,6 @@ statePercShiftPlot <- ggplot(SNNcounts2, aes(x=Sig, y=delta, fill=Sig)) +
            colour="black",
            size = 0.3) +
   scale_color_jama(alpha = 0.7) +
-  # geom_errorbar(aes(ymin=deltaMean-ci, ymax = deltaMean+ci),
-  # width = 0.2,
-  # position = position_dodge(.9)) +
   xlab("Transcriptional State Signature") +
   ylab("Delta % State Proportion") +
   theme_bw() +
@@ -346,8 +286,6 @@ statePercShiftPlot <- ggplot(SNNcounts2, aes(x=Sig, y=delta, fill=Sig)) +
 pdf(file = "05_output/SNN_statePercentShiftPlot.pdf")
 statePercShiftPlot
 dev.off()
-
-# DotPlot(int, group.by = "integrated_snn_res.0.25", features = c("NPC1singscore", "NPC2singscore", "OPCsingscore", "MES1singscore", "MES2singscore", "ACsingscore"))
 
 # Now export data to py, visualize effects on cell cycle by SNN cluster (also by transcriptional state, one at a time)
 
@@ -419,9 +357,9 @@ armMarkers_7$cluster <- "7"
 allArmMarkersByCluster <- rbind(armMarkers_0, armMarkers_1, armMarkers_2, armMarkers_3, armMarkers_4, armMarkers_5, armMarkers_6, armMarkers_7)
 write.csv(allArmMarkersByCluster, file = "05_output/allArmMarkersBySNNCluster.csv")
 
-EV_0 <- EnhancedVolcano(armMarkers_0, 
-                         x = 'avg_log2FC', 
-                         y = "p_val_adj", 
+EV_0 <- EnhancedVolcano(armMarkers_0,
+                         x = 'avg_log2FC',
+                         y = "p_val_adj",
                          lab = rownames(armMarkers_0),
                          title = "UM002 vs DMSO in Cluster 0",
                          titleLabSize = 36,
@@ -434,13 +372,13 @@ EV_0 <- EnhancedVolcano(armMarkers_0,
                          legendPosition = 'none',
                          drawConnectors = T,
                          labSize = 12, labhjust = 1, boxedLabels = T, caption = NULL, labvjust = 2.5,
-                         xlim = c(min(armMarkers_0[["avg_log2FC"]], na.rm=TRUE) - 0.35, 
+                         xlim = c(min(armMarkers_0[["avg_log2FC"]], na.rm=TRUE) - 0.35,
                                   max(armMarkers_0[["avg_log2FC"]], na.rm=TRUE) + 0.35)
 ) + coord_flip()
 # EV_0
-EV_1 <- EnhancedVolcano(armMarkers_1, 
-                        x = 'avg_log2FC', 
-                        y = "p_val_adj", 
+EV_1 <- EnhancedVolcano(armMarkers_1,
+                        x = 'avg_log2FC',
+                        y = "p_val_adj",
                         lab = rownames(armMarkers_1),
                         title = "UM002 vs DMSO in Cluster 1",
                         titleLabSize = 36,
@@ -453,13 +391,13 @@ EV_1 <- EnhancedVolcano(armMarkers_1,
                         legendPosition = 'none',
                         drawConnectors = T,
                         labSize = 12, labhjust = 1, boxedLabels = T, caption = NULL, labvjust = 2.5,
-                        xlim = c(min(armMarkers_1[["avg_log2FC"]], na.rm=TRUE) - 0.5, 
+                        xlim = c(min(armMarkers_1[["avg_log2FC"]], na.rm=TRUE) - 0.5,
                                  max(armMarkers_1[["avg_log2FC"]], na.rm=TRUE) + 0.5)
 ) + coord_flip()
 # EV_1
-EV_2 <- EnhancedVolcano(armMarkers_2, 
-                        x = 'avg_log2FC', 
-                        y = "p_val_adj", 
+EV_2 <- EnhancedVolcano(armMarkers_2,
+                        x = 'avg_log2FC',
+                        y = "p_val_adj",
                         lab = rownames(armMarkers_2),
                         title = "UM002 vs DMSO in Cluster 2",
                         titleLabSize = 36,
@@ -472,13 +410,13 @@ EV_2 <- EnhancedVolcano(armMarkers_2,
                         legendPosition = 'none',
                         drawConnectors = T,
                         labSize = 12, labhjust = 1, boxedLabels = T, caption = NULL, labvjust = 2.5,
-                        xlim = c(min(armMarkers_2[["avg_log2FC"]], na.rm=TRUE) - 0.35, 
+                        xlim = c(min(armMarkers_2[["avg_log2FC"]], na.rm=TRUE) - 0.35,
                                  max(armMarkers_2[["avg_log2FC"]], na.rm=TRUE) + 0.35)
 ) + coord_flip()
 # EV_2
-EV_3 <- EnhancedVolcano(armMarkers_3, 
-                        x = 'avg_log2FC', 
-                        y = "p_val_adj", 
+EV_3 <- EnhancedVolcano(armMarkers_3,
+                        x = 'avg_log2FC',
+                        y = "p_val_adj",
                         lab = rownames(armMarkers_3),
                         title = "UM002 vs DMSO in Cluster 3",
                         titleLabSize = 36,
@@ -491,13 +429,13 @@ EV_3 <- EnhancedVolcano(armMarkers_3,
                         legendPosition = 'none',
                         drawConnectors = T,
                         labSize = 12, labhjust = 1, boxedLabels = T, caption = NULL, labvjust = 2.5,
-                        xlim = c(min(armMarkers_3[["avg_log2FC"]], na.rm=TRUE) - 0.35, 
+                        xlim = c(min(armMarkers_3[["avg_log2FC"]], na.rm=TRUE) - 0.35,
                                  max(armMarkers_3[["avg_log2FC"]], na.rm=TRUE) + 0.35)
 ) + coord_flip()
 # EV_3
-EV_4 <- EnhancedVolcano(armMarkers_4, 
-                        x = 'avg_log2FC', 
-                        y = "p_val_adj", 
+EV_4 <- EnhancedVolcano(armMarkers_4,
+                        x = 'avg_log2FC',
+                        y = "p_val_adj",
                         lab = rownames(armMarkers_4),
                         title = "UM002 vs DMSO in Cluster 4",
                         titleLabSize = 36,
@@ -510,13 +448,13 @@ EV_4 <- EnhancedVolcano(armMarkers_4,
                         legendPosition = 'none',
                         drawConnectors = T,
                         labSize = 12, labhjust = 1, boxedLabels = T, caption = NULL, labvjust = 2.5,
-                        xlim = c(min(armMarkers_4[["avg_log2FC"]], na.rm=TRUE) - 0.35, 
+                        xlim = c(min(armMarkers_4[["avg_log2FC"]], na.rm=TRUE) - 0.35,
                                  max(armMarkers_4[["avg_log2FC"]], na.rm=TRUE) + 0.35)
 ) + coord_flip()
 # EV_4
-EV_5 <- EnhancedVolcano(armMarkers_5, 
-                        x = 'avg_log2FC', 
-                        y = "p_val_adj", 
+EV_5 <- EnhancedVolcano(armMarkers_5,
+                        x = 'avg_log2FC',
+                        y = "p_val_adj",
                         lab = rownames(armMarkers_5),
                         title = "UM002 vs DMSO in Cluster 5",
                         titleLabSize = 36,
@@ -529,13 +467,13 @@ EV_5 <- EnhancedVolcano(armMarkers_5,
                         legendPosition = 'none',
                         drawConnectors = T,
                         labSize = 12, labhjust = 1, boxedLabels = T, caption = NULL, labvjust = 2.5,
-                        xlim = c(min(armMarkers_5[["avg_log2FC"]], na.rm=TRUE) - 0.35, 
+                        xlim = c(min(armMarkers_5[["avg_log2FC"]], na.rm=TRUE) - 0.35,
                                  max(armMarkers_5[["avg_log2FC"]], na.rm=TRUE) + 0.35)
 ) + coord_flip()
 # EV_6
-EV_6 <- EnhancedVolcano(armMarkers_6, 
-                        x = 'avg_log2FC', 
-                        y = "p_val_adj", 
+EV_6 <- EnhancedVolcano(armMarkers_6,
+                        x = 'avg_log2FC',
+                        y = "p_val_adj",
                         lab = rownames(armMarkers_6),
                         title = "UM002 vs DMSO in Cluster 6",
                         titleLabSize = 36,
@@ -548,13 +486,13 @@ EV_6 <- EnhancedVolcano(armMarkers_6,
                         legendPosition = 'none',
                         drawConnectors = T,
                         labSize = 12, labhjust = 1, boxedLabels = T, caption = NULL, labvjust = 2.5,
-                        xlim = c(min(armMarkers_6[["avg_log2FC"]], na.rm=TRUE) - 0.35, 
+                        xlim = c(min(armMarkers_6[["avg_log2FC"]], na.rm=TRUE) - 0.35,
                                  max(armMarkers_6[["avg_log2FC"]], na.rm=TRUE) + 0.35)
 ) + coord_flip()
 # EV_6
-EV_7 <- EnhancedVolcano(armMarkers_7, 
-                        x = 'avg_log2FC', 
-                        y = "p_val_adj", 
+EV_7 <- EnhancedVolcano(armMarkers_7,
+                        x = 'avg_log2FC',
+                        y = "p_val_adj",
                         lab = rownames(armMarkers_7),
                         title = "UM002 vs DMSO in Cluster 7",
                         titleLabSize = 36,
@@ -567,23 +505,23 @@ EV_7 <- EnhancedVolcano(armMarkers_7,
                         legendPosition = 'none',
                         drawConnectors = T,
                         labSize = 12, labhjust = 1, boxedLabels = T, caption = NULL, labvjust = 2.5,
-                        xlim = c(min(armMarkers_7[["avg_log2FC"]], na.rm=TRUE) - 0.35, 
+                        xlim = c(min(armMarkers_7[["avg_log2FC"]], na.rm=TRUE) - 0.35,
                                  max(armMarkers_7[["avg_log2FC"]], na.rm=TRUE) + 0.35)
 ) + coord_flip()
 # EV_7
 
 pdf(file = "05_output/snn_0.25_volcanoes_1.pdf", width = 35, height = 35*2)
-plot_grid(plotlist = list(EV_0, EV_1, EV_2, EV_3), 
+plot_grid(plotlist = list(EV_0, EV_1, EV_2, EV_3),
           ncol = 1, nrow = 4,
           labels = "AUTO")
 dev.off()
 pdf(file = "05_output/snn_0.25_volcanoes_2.pdf", width = 35, height = 35*2)
-plot_grid(plotlist = list(EV_4, EV_5, EV_6, EV_7), 
+plot_grid(plotlist = list(EV_4, EV_5, EV_6, EV_7),
           ncol = 1, nrow = 4,
           labels = "AUTO")
 dev.off()
 
-#### Pie charts of cell-cycle phase within SNN clusters. 
+#### Pie charts of cell-cycle phase within SNN clusters.
 
 #Cluster0
 Cluster0sub <- subset(int, integrated_snn_res.0.25 == "0")
