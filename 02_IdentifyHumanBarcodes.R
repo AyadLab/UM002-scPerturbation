@@ -2,10 +2,6 @@ library(Seurat)
 
 obj <- readRDS(file = "01_output/CellTagInt_Barnyard_UMAP.Rds")
 
-# DimPlot(obj, group.by = "seurat_clusters", label = TRUE)
-# DimPlot(obj, cells.highlight = WhichCells(obj, idents = c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "11", "14", "15", "16", "18", "19", "20")))
-
-# VlnPlot(obj, features = c("percent.hg19"))
 human <- subset(obj, idents = c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "11", "14", "15", "16", "18", "19", "20"))
 
 barcodes <- data.frame(barcodes = colnames(human))

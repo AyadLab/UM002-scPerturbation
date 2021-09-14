@@ -251,12 +251,7 @@ saveRDS(obj, file = "01_output/CellTagInt_Barnyard_UMAP.Rds")
 
 ################################################################################
 
-# Generate supplemental figure showing seperation of pdx and mouse cells. 
-
-# source umap
-
-# sourceUMAP <- as.ggplot(DimPlot(obj, group.by = "orig.ident") + ggtitle(label = "Original Identity"))
-# armUMAP <- as.ggplot(DimPlot(obj, group.by = c("Arm"), cols = c("azure4", "chartreuse3")) + ggtitle(label = "Treatment"))
+# Generate supplemental figure showing seperation of pdx and mouse cells.
 saveRDS(obj, file = "01_output/barnyardObj.RDS")
 
 snnUMAP <- as.ggplot(DimPlot(obj, group.by = "ident", label = TRUE, cols = DiscretePalette(20, palette = "alphabet2"), pt.size = 0.01))
@@ -269,7 +264,7 @@ sample10xUMAP <- as.ggplot(DimPlot(obj, group.by = "orig.ident", label = F, cols
 # pl <- as.ggplot(DimPlot(obj, group.by = "orig.ident", label = F, cols = DiscretePalette(2, "alphabet"), pt.size = 0.05))
 sample10xUMAP
 
-# Add PieChart of proportions of cells from each treatment arm. 
+# Add PieChart of proportions of cells from each treatment arm.
 
 armdf <- as.data.frame(table(int$Arm))
 armdf$perc <- armdf$Freq / sum(armdf$Freq) * 100
@@ -280,15 +275,12 @@ lbls <- lbls <- paste(names(armtab), "\n", armtab, sep = "")
 pdf(file = "01_output/arm_proportionPie.pdf")
 pie3D(armtab, explode = 0.1, labels = lbls, main="Treatment", start = 2, col = c("lightgrey", "chartreuse"))
 dev.off()
-# armUMAP
-# DimPlo
-# 
-# DimPlot(obj, cols = DiscretePalette(20, palette = "alphabet2"))
+
 dev.off()
 pdf(file = "01_output/mm10_hg19_seperation.pdf", width = 14, height = 14)
 plot_grid(plotlist = list(armUMAP,
                           sample10xUMAP,
-                          hg19UMAP, 
+                          hg19UMAP,
                           mm10UMAP
                           ), ncol = 2, labels = "AUTO")
 dev.off()
