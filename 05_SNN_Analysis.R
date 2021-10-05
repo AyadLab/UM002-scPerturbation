@@ -49,6 +49,8 @@ connectedBarplot <- function(dat, color=rainbow(nrow(dat)), space=1, alpha=0.5, 
   }
 }
 
+# Add this line
+
 ###########################################################################################
 
 int <- readRDS(file = "04_output/04_CellTagHu_CytoTRACE.RDS")
